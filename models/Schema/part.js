@@ -41,6 +41,6 @@ const PartSchema = new Schema(
   }
 );
 
-const Todo = mongoose.model("Part", PartSchema);
+const Part = mongoose.model("Part", PartSchema);
 
-export default Todo;
+export default Part;
