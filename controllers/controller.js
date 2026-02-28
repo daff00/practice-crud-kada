@@ -1,72 +1,84 @@
 import express from "express";
-import Todo from "../models/models.js";
+import Part from "../models/models.js";
 
 const router = express.Router();
 
-// Get
+// Error Handler function
+const handleErrors = (err, res) => {
+  if (err.name === "ValidationError") {
+    const messages = Object.values(err.errors).map((val) => val.message);
+    return res.status(400).json({ success: false, error: messages });
+  }
+  if (err.name === "CastError") {
+    return res.status(400).json({ success: false, error: "Format ID tidak valid" });
+  }
+  res.status(500).json({ success: false, error: "Server Error" });
+};
+
+// Get - Read All
 router.get("/", async (req, res) => {
   try {
-    const todos = await Todo.find({});
-    res.json(todos);
+    const parts = await Part.find({});
+    res.json(parts);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
+// Get - Read by ID
+router.get("/:id", async (req, res) => {
+  try {
+    const part = await Part.findById(req.params.id);
+    if (!part) {
+      return res.status(404).json({ success: false, error: "Komponen tidak ditemukan" });
+    }
+    res.json({ success: true, data: part });
+  } catch (err) {
+    handleErrors(err, res);
+  }
+})
 
 // Post
 router.post("/", async (req, res) => {
   try {
-    const { task, status } = req.body;
-
-    const todo = await Todo.create({ task, status });
-
-    res.status(201).json(todo);
+    const part = await Part.create(req.body);
+    res.status(201).json({ success: true, data: part});
   } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// find one
-router.get("/:id", async (req, res) => {
-  try {
-    const findById = await Todo.findById(req.params.id);
-    if (!findById) {
-      return res.status(404).json({ error: "Todo not found" });
-    }
-    res.json(findById);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    handleErrors(err, res);
   }
 });
 
 // Update
 router.patch("/:id", async (req, res) => {
   try {
-    const updatedTodo = await Todo.findByIdAndUpdate(req.params.id, req.body, {
-      returnValidators: true,
-      returnDocument: "after",
+    const updatedPart = await Part.findByIdAndUpdate(
+      req.params.id, 
+      req.body, {
+        new: true,
+        returnValidators: true,
+        returnDocument: "after",
     });
 
-    if (!updatedTodo) {
-      return res.status(404).json({ error: "Todo not found" });
+    if (!updatedPart) {
+      return res.status(404).json({ success: false, error: "Komponen tidak ditemukan" });
     }
 
-    res.json(updatedTodo);
+    res.json({ success: true, data: updatedPart });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    handleErrors(err, res);
   }
 });
 
 // delete
 router.delete("/:id", async (req, res) => {
   try {
-    const deleteTask = await Todo.findByIdAndDelete(req.params.id);
-    if (!deleteTask) {
-      return res.status(404).json({ error: "Todo not found" });
+    const deletePart = await Part.findByIdAndDelete(req.params.id);
+    if (!deletePart) {
+      return res.status(404).json({ success: false, error: "Komponen tidak ditemukan" });
     }
-    res.json({ message: `Successful delete task with id ${req.params.id}` });
+    res.json({ success: true, message: `Berhasil menghapus data dengan id ${req.params.id}` });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    handleErrors(err, res);
   }
 });
 
