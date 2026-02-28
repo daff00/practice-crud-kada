@@ -1,3 +1,3 @@
-import Todo from './Schema/todo.js';
+import Todo from './Schema/part.js';
 
 export default Todo;
