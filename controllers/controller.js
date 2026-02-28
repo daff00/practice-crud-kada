@@ -3,6 +3,20 @@ import Part from "../models/models.js";
 
 const router = express.Router();
 
+// Middleware pencatat waktu dan method request
+router.use((req, res, next) => {
+  console.log(`[LOG] Time: ${new Date().toISOString()} | Method: ${req.method} | Path: ${req.originalUrl}`);
+  next();
+})
+
+// Middleware check body
+const checkBody = (req, res, next) => {
+  if (Object.keys(req.body).length === 0) {
+    return res.status(400).json({ error: "Body request tidak boleh kosong" });
+  }
+  next();
+}
+
 // Error Handler function
 const handleErrors = (err, res) => {
   if (err.name === "ValidationError") {
@@ -39,7 +53,7 @@ router.get("/:id", async (req, res) => {
 })
 
 // Post
-router.post("/", async (req, res) => {
+router.post("/", checkBody, async (req, res) => {
   try {
     const part = await Part.create(req.body);
     res.status(201).json({ success: true, data: part});
@@ -49,14 +63,13 @@ router.post("/", async (req, res) => {
 });
 
 // Update
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", checkBody, async (req, res) => {
   try {
     const updatedPart = await Part.findByIdAndUpdate(
       req.params.id, 
       req.body, {
         new: true,
-        returnValidators: true,
-        returnDocument: "after",
+        runValidators: true,
     });
 
     if (!updatedPart) {
