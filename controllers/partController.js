@@ -1,5 +1,5 @@
 import express from "express";
-import Part from "../models/models.js";
+import models from "../models/models.js";
 
 const router = express.Router();
 
@@ -32,7 +32,7 @@ const handleErrors = (err, res) => {
 // Get - Read All
 router.get("/", async (req, res) => {
   try {
-    const parts = await Part.find({});
+    const parts = await models.Part.find({});
     res.json(parts);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -42,7 +42,7 @@ router.get("/", async (req, res) => {
 // Get - Read by ID
 router.get("/:id", async (req, res) => {
   try {
-    const part = await Part.findById(req.params.id);
+    const part = await models.Part.findById(req.params.id);
     if (!part) {
       return res.status(404).json({ success: false, error: "Komponen tidak ditemukan" });
     }
@@ -55,7 +55,7 @@ router.get("/:id", async (req, res) => {
 // Post
 router.post("/", checkBody, async (req, res) => {
   try {
-    const part = await Part.create(req.body);
+    const part = await models.Part.create(req.body);
     res.status(201).json({ success: true, data: part});
   } catch (err) {
     handleErrors(err, res);
@@ -65,7 +65,7 @@ router.post("/", checkBody, async (req, res) => {
 // Update
 router.patch("/:id", checkBody, async (req, res) => {
   try {
-    const updatedPart = await Part.findByIdAndUpdate(
+    const updatedPart = await models.Part.findByIdAndUpdate(
       req.params.id, 
       req.body, {
         new: true,
@@ -85,7 +85,7 @@ router.patch("/:id", checkBody, async (req, res) => {
 // delete
 router.delete("/:id", async (req, res) => {
   try {
-    const deletePart = await Part.findByIdAndDelete(req.params.id);
+    const deletePart = await models.Part.findByIdAndDelete(req.params.id);
     if (!deletePart) {
       return res.status(404).json({ success: false, error: "Komponen tidak ditemukan" });
     }
