@@ -1,61 +1,84 @@
 import express from "express";
-import users from "../models/userModel.js";
-const router = express.Router();
+import models from "../models/models.js";
 import bcryptHelper from "../helpers/password.js";
 import generateToken from "../helpers/token.js";
+import { checkBody } from "../middlewares/validator.js";
+import { verifyToken } from "../middlewares/auth.js";
 
-router.get("/", async (req, res, next) => {
+const router = express.Router();
+const User = models.User;
+
+// Get All Users - Dilindungi oleh middleware auth
+router.get("/", verifyToken, async (req, res, next) => {
   try {
-    const user = await users.find();
-    res.status(200).json(user);
+    const users = await User.find().select("-password"); // Sembunyikan password
+    res.status(200).json({ success: true, data: users });
   } catch (err) {
-    next(err);
+    res.status(500).json({ success: false, error: "Server Error" });
   }
 });
 
-router.post("/login", async (req, res, next) => {
+// Register
+router.post("/register", checkBody, async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    // cek user exist
-    const user = await users.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" });
+    if (!email || !password) {
+      return res.status(400).json({ success: false, error: "Email dan password wajib diisi" });
     }
 
-    // cek password
-    const isMatch = await bcryptHelper.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid email or password" });
+    // Cek apakah email sudah digunakan
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ success: false, error: "Email sudah terdaftar" });
     }
 
-    // generate token
-    const token = generateToken({ id: user._id, email: user.email });
-
-    return res.json({
-      id: user._id,
-      email: user.email,
-      token,
+    const user = await User.create({ email, password });
+    
+    res.status(201).json({ 
+      success: true, 
+      data: { 
+        id: user._id, 
+        email: user.email 
+      } 
     });
   } catch (err) {
-    return next(err);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
-router.post("/register", async (req, res, next) => {
-  let { email, password } = req.body || {}; //||{} kalau ga ada name and email, maka akan diisi dengan object kosong, jadi ga error
+// Login
+router.post("/login", checkBody, async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
 
-  //hash password sebelum disimpan ke database, supaya lebih aman, karena kalau ada yang berhasil masuk ke database, maka dia ga akan bisa melihat password asli dari usernya
+    if (!email || !password) {
+      return res.status(400).json({ success: false, error: "Email dan password wajib diisi" });
+    }
 
-  users
-    .create({ email, password })
-    .then((users) => {
-      res.json(users);
-    })
-    .catch((err) => {
-      console.log(err);
-      next(err); //panggil next dengan err, supaya error handling middleware bisa menangani errornya
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ success: false, error: "Email atau password salah" });
+    }
+
+    const isMatch = await bcryptHelper.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, error: "Email atau password salah" });
+    }
+
+    const token = generateToken({ id: user._id, email: user.email });
+
+    res.json({
+      success: true,
+      data: {
+        id: user._id,
+        email: user.email,
+        token,
+      }
     });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 export default router;

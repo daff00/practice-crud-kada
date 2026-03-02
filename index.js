@@ -8,9 +8,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json())
-app.use(express.urlencoded());
-app.use('/part', partRoutes);
-app.use('/user', userRoutes);
+app.use(express.urlencoded({ extended: true }));
+
+app.use('/parts', partRoutes);
+app.use('/users', userRoutes);
 
 app.listen(PORT, () => {
     console.log(`Example app is listening on ${PORT}`);
