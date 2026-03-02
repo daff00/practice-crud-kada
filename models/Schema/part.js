@@ -6,6 +6,11 @@ const ObjectId = Schema.ObjectId;
 
 const PartSchema = new Schema(
 {
+    user_id: {
+      type: ObjectId,
+      ref: 'User',
+      required: true
+    },
     id: ObjectId,
     name: {
       type: String,
