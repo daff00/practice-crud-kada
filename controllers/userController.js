@@ -4,22 +4,27 @@ import bcryptHelper from "../helpers/password.js";
 import generateToken from "../helpers/token.js";
 import { checkBody } from "../middlewares/validator.js";
 import { verifyToken } from "../middlewares/auth.js";
+import { logger } from "../middlewares/logger.js";
+import { handleErrors } from "../helpers/errorHandler.js";
 
 const router = express.Router();
 const User = models.User;
 
+// Middleware global untuk route /user
+router.use(logger);
+
 // Get All Users - Dilindungi oleh middleware auth
-router.get("/", verifyToken, async (req, res, next) => {
+router.get("/", verifyToken, async (req, res) => {
   try {
     const users = await User.find().select("-password"); // Sembunyikan password
     res.status(200).json({ success: true, data: users });
   } catch (err) {
-    res.status(500).json({ success: false, error: "Server Error" });
+    handleErrors(err, res);
   }
 });
 
 // Register
-router.post("/register", checkBody, async (req, res, next) => {
+router.post("/register", checkBody, async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -43,12 +48,12 @@ router.post("/register", checkBody, async (req, res, next) => {
       } 
     });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    handleErrors(err, res);
   }
 });
 
 // Login
-router.post("/login", checkBody, async (req, res, next) => {
+router.post("/login", checkBody, async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -77,7 +82,7 @@ router.post("/login", checkBody, async (req, res, next) => {
       }
     });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    handleErrors(err, res);
   }
 });
 
