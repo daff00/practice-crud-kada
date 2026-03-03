@@ -1,32 +1,24 @@
-import express from "express";
 import models from "../models/models.js";
-import { checkBody } from "../middlewares/validator.js";
-import { logger } from "../middlewares/logger.js";
-import { verifyToken } from "../middlewares/auth.js"; // Opsional: untuk proteksi endpoint
 import { handleErrors } from "../helpers/errorHandler.js";
 
-const router = express.Router();
-
-// Middleware global untuk route /part
-router.use(logger);
-
-// Uncomment baris di bawah ini jika ingin SELURUH endpoint part (GET, POST, PATCH, DELETE) wajib login
-// router.use(verifyToken);
-
-// Get - Read All
-router.get("/", verifyToken, async (req, res) => {
+// Mengambil semua data komponen milik pengguna yang sedang login
+export const getAllParts = async (req, res) => {
   try {
+    // Mencari komponen yang memiliki user_id sesuai dengan ID dari token JWT
     const parts = await models.Part.find({ user_id: req.user.id });
-    res.json(parts);
+    res.json({ success: true, data: parts });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ success: false, error: err.message });
   }
-});
+};
 
-// Get - Read by ID
-router.get("/:id", async (req, res) => {
+// Mengambil detail satu komponen berdasarkan ID
+export const getPartById = async (req, res) => {
   try {
-    const part = await models.Part.findById(req.params.id);
+    // Mencari komponen berdasarkan ID komponen (dari URL) DAN ID pemilik (dari token)
+    const part = await models.Part.findOne({ _id: req.params.id, user_id: req.user.id });
+    
+    // Jika tidak ditemukan, berarti komponen tidak ada atau bukan milik pengguna ini
     if (!part) {
       return res.status(404).json({ success: false, error: "Komponen tidak ditemukan" });
     }
@@ -34,50 +26,50 @@ router.get("/:id", async (req, res) => {
   } catch (err) {
     handleErrors(err, res);
   }
-});
+};
 
-// Post
-// Jika hanya POST, PATCH, DELETE yang butuh login, tambahkan verifyToken seperti ini:
-// router.post("/", verifyToken, checkBody, async (req, res) => {
-router.post("/", verifyToken, checkBody, async (req, res) => {
+// Menambahkan data komponen baru
+export const createPart = async (req, res) => {
   try {
+    // Menyisipkan user_id ke dalam data yang akan disimpan berdasarkan ID dari token JWT
     const partData = { ...req.body, user_id: req.user.id };
+    
+    // Menyimpan data komponen ke database
     const part = await models.Part.create(partData);
     res.status(201).json({ success: true, data: part });
   } catch (err) {
     handleErrors(err, res);
   }
-});
+};
 
-// Update (Wajib Login & Cek Kepemilikan)
-router.patch("/:id", verifyToken, checkBody, async (req, res) => {
+// Memperbarui data komponen yang sudah ada
+export const updatePart = async (req, res) => {
   try {
-    // Gunakan findOneAndUpdate untuk mencari berdasarkan ID komponen DAN ID user
+    // Memperbarui komponen dengan syarat ID komponen dan user_id harus cocok
+    // new: true digunakan untuk mengembalikan data terbaru setelah di-update
+    // runValidators: true digunakan untuk memastikan aturan schema (seperti enum) tetap berjalan
     const updatedPart = await models.Part.findOneAndUpdate(
       { _id: req.params.id, user_id: req.user.id }, 
       req.body, 
-      {
-        new: true,
-        runValidators: true,
-      }
+      { new: true, runValidators: true }
     );
 
     if (!updatedPart) {
-      return res.status(404).json({ success: false, error: "Komponen tidak ditemukan atau Anda tidak memiliki hak akses untuk mengubahnya" });
+      return res.status(404).json({ success: false, error: "Komponen tidak ditemukan atau Anda tidak memiliki hak akses" });
     }
 
     res.json({ success: true, data: updatedPart });
   } catch (err) {
     handleErrors(err, res);
   }
-});
+};
 
-// Delete
-router.delete("/:id", verifyToken, async (req, res) => {
+// Menghapus data komponen
+export const deletePart = async (req, res) => {
   try {
+    // Menghapus komponen dengan syarat ID komponen dan user_id harus cocok
     const deletePart = await models.Part.findOneAndDelete({ 
-      _id: req.params.id, 
-      user_id: req.user.id 
+      _id: req.params.id, user_id: req.user.id 
     });
     
     if (!deletePart) {
@@ -87,6 +79,4 @@ router.delete("/:id", verifyToken, async (req, res) => {
   } catch (err) {
     handleErrors(err, res);
   }
-});
-
-export default router;
+};
