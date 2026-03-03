@@ -1,5 +1,6 @@
 import dotenv from 'dotenv/config';
 import express from 'express';
+import cors from 'cors';
 import mongo from './configurations/mongoConnection.js';
 import partRoutes from './routes/partRoute.js';
 import userRoutes from './routes/userRoute.js';
@@ -7,6 +8,7 @@ import userRoutes from './routes/userRoute.js';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
