@@ -2,6 +2,7 @@ import dotenv from 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import mongo from './configurations/mongoConnection.js';
+import './configurations/passport.js';
 import partRoutes from './routes/partRoute.js';
 import userRoutes from './routes/userRoute.js';
 
