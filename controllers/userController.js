@@ -2,6 +2,7 @@ import models from "../models/models.js";
 import bcryptHelper from "../helpers/password.js";
 import generateToken from "../helpers/token.js";
 import { handleErrors } from "../helpers/errorHandler.js";
+import { sendEmail } from "../helpers/email.js";
 
 const User = models.User;
 
@@ -38,6 +39,19 @@ export const register = async (req, res) => {
 
     // Menyimpan data pengguna baru (password akan di-hash secara otomatis oleh Mongoose pre-save hook di User.js)
     const user = await User.create({ email, password });
+
+    // Mengirim email
+    const emailSubject = "Selamat Datang di PC Builder App";
+    const emailHTML = `
+      <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+        <h2 style="color: #4CAF50;">Registrasi Berhasil!</h2>
+        <p>Halo,</p>
+        <p>Akun dengan email <strong>${email}</strong> telah berhasil didaftarkan di sistem kami.</p>
+        <p>Silakan login untuk mulai menyusun daftar komponen PC (CPU, GPU, RAM, dll) impian Anda.</p>
+      </div>
+    `;
+
+    sendEmail(user.email, emailSubject, emailHTML);
 
     // Mengembalikan response sukses dengan data ID dan email
     res.status(201).json({
