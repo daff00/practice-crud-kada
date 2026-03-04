@@ -10,7 +10,7 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       // Gunakan URL absolut sesuai yang didaftarkan di Authorized redirect URIs Google Cloud Console
-      callbackURL: "http://localhost:5000/user/auth/google/callback", 
+      callbackURL: process.env.GOOGLE_CALLBACK_URL, 
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
