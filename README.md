@@ -108,6 +108,12 @@ npm run dev   # development — dengan nodemon (auto-restart)
 npm start     # production
 ```
 
+**4. Docker compose (opsional)**
+Menjalankan aplikasi via docker-compose.
+```
+docker compose up --build -d
+```
+
 Server berjalan di 👉 **http://localhost:3000**
 
 ---
