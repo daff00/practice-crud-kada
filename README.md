@@ -82,7 +82,7 @@ npm install
 
 ```env
 PORT=3000
-MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/<nama-database>
+MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/<nama-database> # jika pakai mongodb local: mongodb://mongodb:27017/<nama-database>
 
 # JWT
 JWT_SECRET=rahasia_super_kuat_123
@@ -109,6 +109,7 @@ npm start     # production
 ```
 
 **4. Docker compose (opsional)**
+
 Menjalankan aplikasi via docker-compose.
 ```
 docker compose up --build -d
