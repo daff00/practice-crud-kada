@@ -2,7 +2,7 @@
 
 # 🖥️ PC Build Inventory API
 
-**RESTful API untuk melacak komponen PC rakitan — dari yang sudah dibeli hingga yang masih diincar. Tes perubahan**
+**RESTful API untuk melacak komponen PC rakitan — dari yang sudah dibeli hingga yang masih diincar.**
 
 > Dibuat sebagai bagian dari tugas latihan di **Korea-ASEAN Digital Academy (KADA)**
 
