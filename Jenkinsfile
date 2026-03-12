@@ -12,7 +12,7 @@ pipeline {
         stage('Build & Deploy with Docker Compose') {
             steps {
                 // Mengambil file .env dari Jenkins Credentials dan men-deploy dengan Docker
-                withCredentials([file(credentialsId: 'api-env-file', variable: 'SECRET_ENV')]) {
+                withCredentials([file(credentialsId: 'kada-express-api', variable: 'SECRET_ENV')]) {
                     sh 'cp $SECRET_ENV .env'
                     
                     // Mematikan kontainer lama lalu build & run kontainer baru
