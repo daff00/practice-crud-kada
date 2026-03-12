@@ -17,7 +17,7 @@ pipeline {
 
                     // 1. Bersihkan paksa container lama jika masih nyangkut
                     sh 'docker rm -f mongodb || true'
-                    sh 'docker rm -f node-app || true'
+                    sh 'docker rm -f express-app || true'
                     
                     // Mematikan kontainer lama lalu build & run kontainer baru
                     sh 'docker compose down'
