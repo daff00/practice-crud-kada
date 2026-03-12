@@ -14,10 +14,16 @@ pipeline {
                 // Mengambil file .env dari Jenkins Credentials dan men-deploy dengan Docker
                 withCredentials([file(credentialsId: 'kada-express-env', variable: 'SECRET_ENV')]) {
                     sh 'cp $SECRET_ENV .env'
+
+                    // 1. Bersihkan paksa container lama jika masih nyangkut
+                    sh 'docker rm -f mongodb || true'
+                    sh 'docker rm -f node-app || true'
                     
                     // Mematikan kontainer lama lalu build & run kontainer baru
                     sh 'docker compose down'
                     sh 'docker compose up --build -d'
+
+                    sh 'docker ps'
                 }
             }
         }
