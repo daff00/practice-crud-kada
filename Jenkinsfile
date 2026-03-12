@@ -4,24 +4,18 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                // Mengambil kode terbaru dari GitHub
                 checkout scm
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                sh 'npm ci'
             }
         }
 
         stage('Build & Deploy with Docker Compose') {
             steps {
-                // Memanggil Secret File dari Jenkins Credentials
-                withCredentials([file(credentialsId: 'kada-express-api', variable: 'SECRET_ENV')]) {
-                    // Menyalin isi file rahasia ke file bernama .env di workspace
+                // Mengambil file .env dari Jenkins Credentials dan men-deploy dengan Docker
+                withCredentials([file(credentialsId: 'api-env-file', variable: 'SECRET_ENV')]) {
                     sh 'cp $SECRET_ENV .env'
                     
-                    // Menjalankan docker compose
+                    // Mematikan kontainer lama lalu build & run kontainer baru
                     sh 'docker compose down'
                     sh 'docker compose up --build -d'
                 }
@@ -37,8 +31,7 @@ pipeline {
             echo 'Pipeline gagal. Silakan cek log Jenkins.'
         }
         always {
-            // Opsional tapi sangat disarankan: 
-            // Menghapus file .env dari workspace Jenkins setelah selesai demi keamanan
+            // Menghapus file .env untuk keamanan
             sh 'rm -f .env'
         }
     }
