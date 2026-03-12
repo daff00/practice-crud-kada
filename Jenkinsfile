@@ -22,8 +22,6 @@ pipeline {
                     // Mematikan kontainer lama lalu build & run kontainer baru
                     sh 'docker compose down'
                     sh 'docker compose up --build -d'
-
-                    sh 'docker ps'
                 }
             }
         }
@@ -39,6 +37,7 @@ pipeline {
         always {
             // Menghapus file .env untuk keamanan
             sh 'rm -f .env'
+            sh 'docker ps'
         }
     }
 }
